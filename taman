@@ -1,0 +1,55 @@
+#!/bin/sh
+# Requires:
+#  - unzip
+#  - libreoffice
+
+# Environment requirements:
+#  - submissions file for an assignment downloaded from Canvas (submissions.zip)
+#  - File named students.txt in root of class directory
+#    - Consists of:
+#      - One student name per line (format: lastfirst)
+# Recommended directory structure:
+#  - root directory ($SCHDIR/year/semester/class)
+#    - students.txt
+#    - hw
+#    - lab
+#    - midterm
+#    - final
+
+if command -v xdg-user-dir >/dev/null 2>&1; then
+    DL_DIR="$(xdg-user-dir DOWNLOAD)"
+else
+    DL_DIR="$HOME/Downloads"
+fi
+
+[ -f ../../students.txt ] || {
+    echo "File with student names not found."
+    exit 1
+}
+students=$(cat ../../students.txt)
+
+mkdir subs
+unzip "$DL_DIR/submissions.zip" -d subs
+rm "$DL_DIR/submissions.zip"
+
+# Make a temp directory for storing your students' submissions
+mkdir tmp
+for f in subs/*; do
+    for s in $students; do
+        echo "$f" | grep -q "subs/$s" && mv "$f" tmp
+        echo "$f" | grep -q "subs/$s.*\.zip" && {
+            mkdir "tmp/$s"
+            unzip "tmp/$(echo "$f" | cut -d/ -f2)" -d "tmp/$s"
+            rm "tmp/$(echo "$f" | cut -d/ -f2)"
+        }
+        # Remove MacOS junk files from submissions.
+        [ -d "tmp/$s/__MACOSX" ] && rm -r "tmp/$s/__MACOSX"
+        rm "tmp/$s/"*.o 2>/dev/null
+        rm "tmp/$s/a.out" 2>/dev/null
+        # libreoffice --headless --convert-to pdf --outdir "tmp/$s" "tmp/$s/"*.docx
+        # rm "tmp/$s/"*.docx 2>/dev/null
+    done
+done
+# Remove all submissions of students who aren't yours.
+rm -r subs
+mv tmp subs
