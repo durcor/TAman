@@ -28,6 +28,11 @@ fi
 }
 students=$(cat ../../students.txt)
 
+[ -d subs ] && {
+    echo "Error: Submissions directory already exists."
+    exit 1
+}
+
 mkdir subs
 unzip "$DL_DIR/submissions.zip" -d subs
 rm "$DL_DIR/submissions.zip"
