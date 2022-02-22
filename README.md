@@ -15,28 +15,30 @@ Scripts for making the life of a CS Teaching/Course Assistant (TA/CA) easier.
 - Run `grade` to grade the submissions.
 
 ## Example Directory Structure for your Class
-├── cs420/
-│   ├── hw/
-│   │   └── 1/ (populated by `taman` and `grade`)
-│   │   │   ├── grades/ (output by `grade`)
-│   │   │   │   ├── sandersonjohn.txt
-│   │   │   │   └── smithalice.txt
-│   │   │   ├── sol/ (solution files)
-│   │   │   │   ├── makefile
-│   │   │   │   └── main.c
-│   │   │   ├── tests.sh (test cases)
-│   │   │   └── subs/
-│   │   │       ├── sandersonjohn/
-│   │   │       │   ├── makefile
-│   │   │       │   └── main.c
-│   │   │       └── smithalice/
-│   │   │           ├── makefile
-│   │   │           └── main.c
-│   │   └── 2/ (before running anything)
-│   │       ├── sol/ (solution files)
-│   │       │   ├── makefile
-│   │       │   ├── first.c
-│   │       │   ├── third.c
-│   │       │   └── second.h
-│   │       └── tests.sh (test cases)
-│   └── students.txt (file with list of students you grade (name format: lastfirst) one per line)
+```
+└── cs420/
+    ├── hw/
+    │   ├── 1/ (populated by `taman` and `grade`)
+    │   │   ├── grades/ (output by `grade`)
+    │   │   │   ├── sandersonjohn.txt
+    │   │   │   └── smithalice.txt
+    │   │   ├── sol/ (solution files)
+    │   │   │   ├── makefile
+    │   │   │   └── main.c
+    │   │   ├── tests.sh (test cases)
+    │   │   └── subs/
+    │   │       ├── sandersonjohn/
+    │   │       │   ├── makefile
+    │   │       │   └── main.c
+    │   │       └── smithalice/
+    │   │           ├── makefile
+    │   │           └── main.c
+    │   └── 2/ (before running anything)
+    │       ├── sol/ (solution files)
+    │       │   ├── makefile
+    │       │   ├── first.c
+    │       │   ├── third.c
+    │       │   └── second.h
+    │       └── tests.sh (test cases)
+    └── students.txt (file with list of students you grade (name format: lastfirst) one per line)
+```
