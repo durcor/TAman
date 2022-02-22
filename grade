@@ -1,0 +1,108 @@
+#!/bin/sh
+
+# Assumptions:
+# - You used `taman` to extract your students' submissions to `subs/`.
+# - You have your solution in `sol/`.
+# - You have test files in `test/` (if applicable).
+
+# TODO:
+# - Output a grade file for each student.
+# - Implement a character difference tolerance
+# - Fix Valgrind output
+
+dir=$PWD
+
+[ -f "$dir/tests.sh" ] || {
+    cat <<EOF
+tests.sh not found.
+Create a tests.sh file of the form:
+assignment="assignment name"
+
+arg_cases="
+commands for argument-checking cases
+...
+"
+
+norm_cases="
+commands for normal cases
+...
+"
+EOF
+    exit 1
+}
+. "$dir/tests.sh"
+
+IFS='
+'
+for sub in "$dir/subs/"*; do
+    student=$(basename "$sub")
+    echo "Grading $student"
+    ln -sf "$dir/sol/mergesort.h" "$sub/"
+    for t in "$dir/test/"*; do
+        ln -sf "$t" "$sub/"
+        ln -sf "$t" "$dir/sol/"
+    done
+    cd "$sub"
+    make || {
+        echo "$student argument grade: 0: Failed compilation"
+        echo "$student $assignment grade: 0: Failed compilation"
+        cd "$dir"
+        echo "Would you like to grade another student? [y/n]"
+        read -r continue
+        [ "$continue" = "y" ] || break
+    }
+    make clean || { echo "Make clean failed"; }
+    make
+
+    mem_leaks=0
+    arg_right=0
+    arg_total=0
+    for c in $arg_cases; do
+        echo "Test case: $c"
+        cd "$dir/sol"
+        eval "$c" 1>/tmp/taman_stdout_sol 2>/tmp/taman_stderr_sol
+        echo $? >/tmp/taman_status_sol
+        cd "$sub"
+        eval "$c" 1>/tmp/taman_stdout_test 2>/tmp/taman_stderr_test
+        echo $? >/tmp/taman_status_test
+        # valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=65 $(echo $c) 1>/dev/null 2>/dev/null
+        # [ $? -eq 65 ] && mem_leaks=$((mem_leaks + 1))
+
+        diff -y --color /tmp/taman_stdout* && arg_right=$((arg_right + 1))
+        diff -y --color /tmp/taman_stderr* && arg_right=$((arg_right + 1))
+        diff -y --color /tmp/taman_status* && arg_right=$((arg_right + 1))
+        arg_total=$((arg_total + 3))
+        rm /tmp/taman_*
+        echo
+    done
+
+    norm_right=0
+    norm_total=0
+    for c in $norm_cases; do
+        echo "Test case: $c"
+        cd "$dir/sol"
+        eval "$c" 1>/tmp/taman_stdout_sol 2>/tmp/taman_stderr_sol
+        echo $? >/tmp/taman_status_sol
+        cd "$sub"
+        eval "$c" 1>/tmp/taman_stdout_test 2>/tmp/taman_stderr_test
+        echo $? >/tmp/taman_status_test
+        # valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=65 $(echo $c) 1>/dev/null 2>/dev/null
+        # [ $? -eq 65 ] && mem_leaks=$((mem_leaks + 1))
+
+        diff -y --color /tmp/taman_stdout* && norm_right=$((norm_right + 1))
+        diff -y --color /tmp/taman_stderr* && norm_right=$((norm_right + 1))
+        diff -y --color /tmp/taman_status* && norm_right=$((norm_right + 1))
+        rm /tmp/taman_*
+        norm_total=$((norm_total + 3))
+        echo
+    done
+
+    echo "$student argument grade: $arg_right/$arg_total"
+    echo "$student $assignment grade: $norm_right/$norm_total"
+    # echo "Cases with memory leaks: $mem_leaks"
+    echo
+    cd "$dir"
+    echo "Would you like to grade another student? [y/n]"
+    read -r continue
+    [ "$continue" = "y" ] || break
+done
